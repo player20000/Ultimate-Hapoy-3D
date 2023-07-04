@@ -1,0 +1,108 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://scenes/player/player.tscn" type="PackedScene" id=2]
+[ext_resource path="res://scenes/levels/lobby/lobby.gd" type="Script" id=3]
+[ext_resource path="res://resources/textures/tile.png" type="Texture" id=4]
+[ext_resource path="res://resources/ui/logo.png" type="Texture" id=5]
+
+[sub_resource type="SpatialMaterial" id=1]
+albedo_color = Color( 0.0588235, 0.0588235, 0.0588235, 1 )
+albedo_texture = ExtResource( 4 )
+uv1_scale = Vector3( 1, -1, 1 )
+uv1_triplanar = true
+
+[sub_resource type="SpatialMaterial" id=22]
+albedo_color = Color( 0.0392157, 0.0392157, 0.0392157, 1 )
+albedo_texture = ExtResource( 4 )
+uv1_scale = Vector3( 1, -1, 1 )
+uv1_triplanar = true
+
+[node name="lobby" type="Spatial"]
+script = ExtResource( 3 )
+
+[node name="combiner" type="CSGCombiner" parent="."]
+use_collision = true
+collision_layer = 3
+collision_mask = 3
+
+[node name="surface" type="CSGBox" parent="combiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -32.5, 0 )
+width = 48.0
+height = 64.0
+depth = 8.0
+material = SubResource( 1 )
+
+[node name="surface2" type="CSGBox" parent="combiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -56, -28.5, 0 )
+width = 64.0
+height = 72.0
+depth = 8.0
+material = SubResource( 1 )
+
+[node name="surface3" type="CSGBox" parent="combiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 56, -28.5, 0 )
+width = 64.0
+height = 72.0
+depth = 8.0
+material = SubResource( 1 )
+
+[node name="surface4" type="CSGBox" parent="combiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 2.5, 0 )
+operation = 2
+width = 8.0
+height = 6.0
+depth = 4.0
+material = SubResource( 22 )
+
+[node name="surface5" type="CSGBox" parent="combiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 2.5, 0 )
+operation = 2
+width = 8.0
+height = 6.0
+depth = 4.0
+material = SubResource( 22 )
+
+[node name="surface6" type="CSGBox" parent="combiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -14.1, -4.1, -19.4 )
+width = 16.0
+height = 48.0
+depth = 16.0
+material = SubResource( 1 )
+
+[node name="surface1" type="CSGBox" parent="combiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 18.9, -4.1, -20.8 )
+width = 18.0
+height = 128.0
+depth = 18.0
+material = SubResource( 1 )
+
+[node name="surface7" type="CSGBox" parent="combiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -18, 0 )
+width = 2048.0
+height = 1.0
+depth = 2048.0
+material = SubResource( 1 )
+
+[node name="sun" type="DirectionalLight" parent="."]
+transform = Transform( 0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 3.5, 0 )
+light_energy = 2.0
+shadow_enabled = true
+directional_shadow_mode = 0
+
+[node name="logo" type="Sprite3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.5, -8 )
+pixel_size = 0.02
+alpha_cut = 1
+texture = ExtResource( 5 )
+
+[node name="camera" type="InterpolatedCamera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 16 )
+far = 512.0
+target = NodePath("../look")
+speed = 0.5
+enabled = true
+
+[node name="look" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 16 )
+
+[node name="player" parent="." instance=ExtResource( 2 )]

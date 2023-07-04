@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/powerup.mp3-55251f5667f46a95a687a8a1500482e2.mp3str"
+
+[deps]
+
+source_file="res://resources/audio/music/powerup.mp3"
+dest_files=[ "res://.import/powerup.mp3-55251f5667f46a95a687a8a1500482e2.mp3str" ]
+
+[params]
+
+loop=true
+loop_offset=0

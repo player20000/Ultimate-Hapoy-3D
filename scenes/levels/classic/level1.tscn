@@ -1,0 +1,326 @@
+[gd_scene load_steps=24 format=2]
+
+[ext_resource path="res://scenes/nodes/ui/pause.tscn" type="PackedScene" id=1]
+[ext_resource path="res://scenes/player/player.tscn" type="PackedScene" id=2]
+[ext_resource path="res://scenes/levels/classic/classic.gd" type="Script" id=3]
+[ext_resource path="res://resources/textures/tile.png" type="Texture" id=4]
+[ext_resource path="res://resources/ui/logo.png" type="Texture" id=5]
+[ext_resource path="res://scenes/nodes/entity/spike/spike.tscn" type="PackedScene" id=6]
+[ext_resource path="res://resources/ui/bit.ttf" type="DynamicFontData" id=7]
+[ext_resource path="res://scenes/nodes/entity/elk/elk.tscn" type="PackedScene" id=8]
+[ext_resource path="res://scenes/nodes/entity/portal/portal.tscn" type="PackedScene" id=9]
+[ext_resource path="res://resources/audio/sounds/die.mp3" type="AudioStream" id=10]
+[ext_resource path="res://scenes/nodes/entity/null/null.tscn" type="PackedScene" id=11]
+[ext_resource path="res://resources/audio/sounds/win.mp3" type="AudioStream" id=12]
+
+[sub_resource type="Shader" id=18]
+code = "shader_type canvas_item;
+
+uniform float vignette_intensity = 0.4;
+uniform float vignette_opacity : hint_range(0.0, 1.0) = 0.5;
+uniform vec4 vignette_rgb : hint_color = vec4(0.0, 0.0, 0.0, 1.0);
+
+float vignette(vec2 uv){
+	uv *= 1.0 - uv.xy;
+	float vignette = uv.x * uv.y * 15.0;
+	return pow(vignette, vignette_intensity * vignette_opacity);
+}
+
+void fragment(){
+	vec4 color = texture(SCREEN_TEXTURE, SCREEN_UV);
+	vec4 text = texture(TEXTURE, UV);
+	
+	text.rgba *= (vignette_rgb.rgba);
+	text.rgba *= (1.0 - vignette(UV));
+	
+	COLOR = vec4((text.rgb)*color.rgb,text.a);
+}"
+
+[sub_resource type="ShaderMaterial" id=19]
+shader = SubResource( 18 )
+shader_param/vignette_intensity = 0.15
+shader_param/vignette_opacity = 0.8
+shader_param/vignette_rgb = Color( 0, 0, 0, 1 )
+
+[sub_resource type="Animation" id=16]
+resource_name = "die"
+tracks/0/type = "value"
+tracks/0/path = NodePath("canvas/filled:material:shader_param/progress")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 0.0, 1.0 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("canvas/die:playing")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ true ]
+}
+
+[sub_resource type="Animation" id=17]
+resource_name = "run"
+tracks/0/type = "value"
+tracks/0/path = NodePath("canvas/filled:material:shader_param/progress")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 1.0, 0.0 ]
+}
+
+[sub_resource type="Animation" id=22]
+resource_name = "teleport"
+tracks/0/type = "value"
+tracks/0/path = NodePath("canvas/filled:material:shader_param/progress")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 0.0, 1.0 ]
+}
+
+[sub_resource type="Shader" id=14]
+code = "shader_type canvas_item;
+
+uniform float progress : hint_range(0, 1);
+uniform float diamondPixelSize = 10.0;
+
+void fragment() {
+	float xFraction = fract(FRAGCOORD.x / diamondPixelSize);
+	float yFraction = fract(FRAGCOORD.y / diamondPixelSize);
+	float xDistance = abs(xFraction - 0.5);
+	float yDistance = abs(yFraction - 0.5);
+	if (xDistance + yDistance + UV.x + UV.y > progress * 4.0) {
+		discard;
+	}
+}"
+
+[sub_resource type="ShaderMaterial" id=15]
+shader = SubResource( 14 )
+shader_param/progress = 0.0
+shader_param/diamondPixelSize = 32.0
+
+[sub_resource type="SpatialMaterial" id=1]
+albedo_color = Color( 0.0588235, 0.0588235, 0.0588235, 1 )
+albedo_texture = ExtResource( 4 )
+uv1_scale = Vector3( 1, -1, 1 )
+uv1_triplanar = true
+
+[sub_resource type="SpatialMaterial" id=20]
+albedo_color = Color( 0.0588235, 0.0588235, 0.0588235, 1 )
+albedo_texture = ExtResource( 4 )
+uv1_scale = Vector3( 1, -1, 1 )
+uv1_triplanar = true
+
+[sub_resource type="DynamicFont" id=21]
+size = 256
+outline_size = 64
+font_data = ExtResource( 7 )
+
+[sub_resource type="Animation" id=23]
+resource_name = "win"
+length = 1.2
+tracks/0/type = "value"
+tracks/0/path = NodePath("portal:translation")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1, 1.1, 1.2 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 0,
+"values": [ Vector3( 0, 8, 0 ), Vector3( 0, 1.5, 0 ), Vector3( 0, 1.6, 0 ), Vector3( 0, 1.5, 0 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("win:playing")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ true ]
+}
+
+[node name="level" type="Spatial"]
+script = ExtResource( 3 )
+time = 15
+
+[node name="canvas" type="CanvasLayer" parent="."]
+pause_mode = 2
+
+[node name="shaders" type="Control" parent="canvas"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="vignette" type="ColorRect" parent="canvas/shaders"]
+material = SubResource( 19 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="transition" type="AnimationPlayer" parent="canvas"]
+pause_mode = 1
+root_node = NodePath("../..")
+autoplay = "run"
+anims/die = SubResource( 16 )
+anims/run = SubResource( 17 )
+anims/teleport = SubResource( 22 )
+
+[node name="pause" parent="canvas" instance=ExtResource( 1 )]
+__meta__ = {
+"_edit_use_anchors_": true
+}
+
+[node name="filled" type="ColorRect" parent="canvas"]
+material = SubResource( 15 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color( 0, 0, 0, 1 )
+
+[node name="die" type="AudioStreamPlayer" parent="canvas"]
+stream = ExtResource( 10 )
+
+[node name="combiner" type="CSGCombiner" parent="."]
+use_collision = true
+collision_layer = 3
+collision_mask = 3
+
+[node name="surface" type="CSGBox" parent="combiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -32.5, 0 )
+width = 38.0
+height = 64.0
+depth = 16.0
+material = SubResource( 1 )
+
+[node name="surface2" type="CSGBox" parent="combiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -20, -32.5, 0 )
+height = 72.0
+depth = 16.0
+material = SubResource( 1 )
+
+[node name="surface3" type="CSGBox" parent="combiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -32.5, 0 )
+height = 72.0
+depth = 16.0
+material = SubResource( 1 )
+
+[node name="scenery" type="Spatial" parent="."]
+
+[node name="sun" type="DirectionalLight" parent="scenery"]
+transform = Transform( 0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 3.5, 0 )
+light_energy = 2.0
+shadow_enabled = true
+directional_shadow_mode = 0
+
+[node name="back" type="Spatial" parent="scenery"]
+
+[node name="logo" type="Sprite3D" parent="scenery/back"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.5, -8 )
+pixel_size = 0.02
+alpha_cut = 1
+texture = ExtResource( 5 )
+
+[node name="surface" type="CSGBox" parent="scenery/back"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 19.4, -4.1, -19.4 )
+width = 16.0
+height = 48.0
+depth = 16.0
+material = SubResource( 1 )
+
+[node name="surface2" type="CSGBox" parent="scenery/back"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -9.6, -18.6, -19.4 )
+width = 12.0
+height = 48.0
+depth = 12.0
+material = SubResource( 1 )
+
+[node name="surface4" type="CSGBox" parent="scenery/back"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -18, 0 )
+width = 2048.0
+height = 1.0
+depth = 2048.0
+material = SubResource( 20 )
+
+[node name="clock" type="Label3D" parent="scenery"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -1 )
+pixel_size = 0.005
+text = "10 seconds left"
+font = SubResource( 21 )
+
+[node name="entity" type="Spatial" parent="."]
+
+[node name="win" type="AudioStreamPlayer" parent="entity"]
+stream = ExtResource( 12 )
+
+[node name="end" type="AnimationPlayer" parent="entity"]
+anims/win = SubResource( 23 )
+
+[node name="elk" parent="entity" instance=ExtResource( 8 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, 0 )
+
+[node name="null" parent="entity" instance=ExtResource( 11 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.5 )
+
+[node name="null2" parent="entity" instance=ExtResource( 11 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0, 3 )
+
+[node name="null3" parent="entity" instance=ExtResource( 11 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 4.5 )
+
+[node name="null4" parent="entity" instance=ExtResource( 11 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0, -4.5 )
+
+[node name="null5" parent="entity" instance=ExtResource( 11 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 0, -2.5 )
+
+[node name="player" parent="entity" instance=ExtResource( 2 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 0, 0 )
+
+[node name="camera" type="InterpolatedCamera" parent="entity/player"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 16 )
+far = 512.0
+target = NodePath("../camposition")
+speed = 0.5
+enabled = true
+
+[node name="camposition" type="Position3D" parent="entity/player"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 16 )
+
+[node name="portal" parent="entity" instance=ExtResource( 9 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0 )
+chengelevel = "res://scenes/levels/lobby/lobby.tscn"
+
+[node name="spikes" type="Spatial" parent="entity"]
+
+[node name="spike" parent="entity/spikes" instance=ExtResource( 6 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
+
+[node name="timer" type="Timer" parent="."]
+autostart = true
+
+[connection signal="animation_finished" from="canvas/transition" to="." method="_on_transition_animation_finished"]
+[connection signal="timeout" from="timer" to="." method="_on_timer_timeout"]
